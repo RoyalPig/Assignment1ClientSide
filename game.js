@@ -11,35 +11,56 @@ async function fetchPuzzleData() {
 async function createPuzzleGrid() {
     const data = await fetchPuzzleData();
 
+    // Check if the data and table exists
     if (!data || !data.rows) {
         console.error('The puzzle data is undefined or does not contain a rows property.');
         return;
     }
+    console.log(data);
 
-    const gameContainer = document.getElementById('theGame');
     const table = document.createElement('table');
-    table.className = 'puzzleGrid'; 
-
     data.rows.forEach((row, rowIndex) => {
         const tr = document.createElement('tr');
         row.forEach((cell, cellIndex) => {
             const td = document.createElement('td');
-            td.className = 'puzzleCell'; 
-
-            if (cell.currentValue === 1) {
-
-            } else if (cell.currentValue === 2) {
-
-            } else {
-
+            const color = getColorForState(cell.currentState);
+            td.style.backgroundColor = color;
+            if (cell.canToggle) {
+                td.addEventListener('click', function() {
+                    cell.currentState = (cell.currentState + 1) % 3;
+                    td.style.backgroundColor = getColorForState(cell.currentState);
+                });
             }
+
             tr.appendChild(td);
         });
         table.appendChild(tr);
     });
 
-    gameContainer.innerHTML = '';
-    gameContainer.appendChild(table);
+    document.getElementById('theGame').appendChild(table);
+    var checkWinButton = document.createElement('button');
+    checkWinButton.innerText = 'Check for Win'; 
+    checkWinButton.addEventListener('click', function() {
+        var result = checkForWin(table);
+        alert(result ? "You won!" : "Not yet..."); // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Conditional_operator
+    });
+
+    document.getElementById('theGame').appendChild(checkWinButton); 
+}
+
+function checkForWin(table) {
+
+    return false;
+}
+
+
+function getColorForState(state) {
+    switch (state) {
+        case 0: return 'grey';
+        case 1: return 'black';
+        case 2: return 'blue';
+        default: return 'green'; // Just in case
+    }
 }
 
 createPuzzleGrid();
