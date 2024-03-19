@@ -11,7 +11,6 @@ async function fetchPuzzleData() {
 async function createPuzzleGrid() {
     const data = await fetchPuzzleData();
 
-    // Check if the data and table exists
     if (!data || !data.rows) {
         console.error('The puzzle data is undefined or does not contain a rows property.');
         return;
@@ -19,19 +18,21 @@ async function createPuzzleGrid() {
     console.log(data);
 
     const table = document.createElement('table');
-    data.rows.forEach((row, rowIndex) => {
+    data.rows.forEach((row) => {
         const tr = document.createElement('tr');
-        row.forEach((cell, cellIndex) => {
+        row.forEach((cellData) => {
             const td = document.createElement('td');
-            const color = getColorForState(cell.currentState);
+            td.dataset.currentState = cellData.currentState;
+            td.dataset.correctState = cellData.correctState;
+            const color = getColorForState(cellData.currentState);
             td.style.backgroundColor = color;
-            if (cell.canToggle) {
+            if (cellData.canToggle) {
                 td.addEventListener('click', function() {
-                    cell.currentState = (cell.currentState + 1) % 3;
-                    td.style.backgroundColor = getColorForState(cell.currentState);
+                    let newState = (parseInt(td.dataset.currentState) + 1) % 3;
+                    td.dataset.currentState = newState;
+                    td.style.backgroundColor = getColorForState(newState);
                 });
             }
-
             tr.appendChild(td);
         });
         table.appendChild(tr);
@@ -48,10 +49,81 @@ async function createPuzzleGrid() {
     document.getElementById('theGame').appendChild(checkWinButton); 
 }
 
-function checkForWin(table) {
 
-    return false;
+function checkForWin(table) {
+    console.log("check for win function");
+    const rowCount = table.rows.length;
+    const colCount = table.rows[0].cells.length;
+
+    for (let i = 0; i < rowCount; i++) {
+        for (let j = 0; j < colCount; j++) {
+            const cell = table.rows[i].cells[j];
+            const currentState = parseInt(cell.dataset.currentState);
+            const correctState = parseInt(cell.dataset.correctState);
+            console.log("Checking cell:", cell, "current state:", currentState, "correct state:", correctState);
+            
+            if (currentState !== correctState) {
+                console.log("Cell state is incorrect", cell);
+                return false; // A cell's state is not correct
+            }
+        }
+    }
+
+    // If you reach this point, all cells have the correct state
+    return true;
 }
+
+
+
+/* 
+function checkForWin(table) {
+    console.log("check for win function");
+    const rowCount = table.rows.length;
+    const colCount = table.rows[0].cells.length;
+    
+    // This assumes the grid is always square, i.e., rowCount == colCount
+    const halfSize = rowCount / 2;
+
+    // Check rows for equal number of state 1 and state 2
+    for (let i = 0; i < rowCount; i++) {
+        let state1Count = 0;
+        let state2Count = 0;
+        for (let j = 0; j < colCount; j++) {
+            if (table.rows[i].cells[j].currentState == 1) {
+                state1Count++;
+            } else if (table.rows[i].cells[j].currentState == 2) {
+                state2Count++;
+            }
+        }
+        // If the counts of state 1 and state 2 are not half the size of the grid, return false
+        if (state1Count !== halfSize || state2Count !== halfSize) {
+            console.log("Rows check time fail. Womp womp! State1: " + state1Count + "State2: " + state2Count);
+            return false;
+        }
+    }
+
+    // Check columns for equal number of state 1 and state 2
+    for (let j = 0; j < colCount; j++) {
+        let state1Count = 0;
+        let state2Count = 0;
+        for (let i = 0; i < rowCount; i++) {
+            if (table.rows[i].cells[j].currentState == 1) {
+                state1Count++;
+            } else if (table.rows[i].cells[j].currentState == 2) {
+                state2Count++;
+            }
+        }
+        // If the counts of state 1 and state 2 are not half the size of the grid, return false
+        if (state1Count !== halfSize || state2Count !== halfSize) {
+            console.log("Colums check time fail. Womp womp! State1: " + state1Count + "State2: " + state2Count);
+            return false;
+        }
+    }
+
+    // If all rows and columns have an equal number of state 1 and state 2 and each count is half the size of the grid, return true
+    return true;
+} */
+
 
 
 function getColorForState(state) {
