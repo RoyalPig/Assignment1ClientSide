@@ -30,6 +30,7 @@ async function createPuzzleGrid() {
             const color = getColorForState(cellData.currentState);
             td.style.backgroundColor = color;
             if (cellData.canToggle) {
+                //Left click
                 td.addEventListener('click', function() {
                     if (!gameStarted) {
                         startTime = Date.now(); // Capture the start time
@@ -39,6 +40,13 @@ async function createPuzzleGrid() {
                     td.dataset.currentState = newState;
                     td.style.backgroundColor = getColorForState(newState);
                     checkForWin(table);
+                });
+                //Right click
+                td.addEventListener('contextmenu', function(event) {
+                    event.preventDefault(); 
+                    let newState = (parseInt(td.dataset.currentState) + 2) % 3; // +2 instead of -1 to handle negative modulo
+                    td.dataset.currentState = newState;
+                    td.style.backgroundColor = getColorForState(newState);
                 });
             }
             tr.appendChild(td);
